@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Document</title>
+</head>
+<body>
+  <main class="sm:container mx-auto lg:max-w-3xl mt-24">
+    <h1 class="text-2xl text-gray-900 bold">Movie Recommender API</h1>
+    <br>
+    <p>Esta aplicación tiene como propósito probar los endpoints de FastAPI que creé  para un sistema de recomendación de películas. Este sistema utiliza el algoritmo de <span>K-Vecinos Más Cercanos</span> para clasificar las 5 películas que más probablemente interesen al usuario con base en la película que ingresan</p>
+    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" id="btn">Request Data</button>
+  </main>
+
+  <section class="sm:container mx-auto lg:max-w-3xl my-6 space-y-12">
+    <div class="flex gap-x-3 flex-1 grow flex-wrap border-solid border-emerald-200 border p-2">
+      <label for="mes" class="text-gray-900 text-lg">Ingrese un mes para saber el total de estrenos</label>
+      <input type="text" name="mes" placeholder="Mes" class="border-emerald-300 border rounded-lg p-2 hover:border-emerald-700" id="mes">
+      <p class="block text-gray-400"></p>
+    </div>
+    <div class="flex gap-x-3 flex-1 grow flex-wrap border-solid border-emerald-200 border p-2">
+      <label for="dia" class="text-gray-900 text-lg">Ingrese un día para saber el total de estrenos</label>
+      <input type="text" name="dia" placeholder="Día" class="border-emerald-300 border rounded-lg p-2 hover:border-emerald-700" id="dia">
+      <p class="block text-gray-400"></p>
+    </div>
+    <div class="flex gap-x-3 flex-1 grow flex-wrap border-solid border-emerald-200 border p-2">
+      <label for="score" class="text-gray-900 text-lg">Ingrese una película para saber el título, el año de estreno y el score</label>
+      <input type="text" name="score" placeholder="Película" class="border-emerald-300 border rounded-lg p-2 hover:border-emerald-700" id="score">
+      <p class="block text-gray-400"></p>
+    </div>
+    <div class="flex gap-x-3 flex-1 grow flex-wrap border-solid border-emerald-200 border p-2">
+      <label for="votos" class="text-gray-900 text-lg">Ingrese una película para saber el título, la cantidad de votos y el valor promedio de las votaciones</label>
+      <input type="text" name="votos" placeholder="Película" class="border-emerald-300 border rounded-lg p-2 hover:border-emerald-700" id="votos">
+      <p class="block text-gray-400"></p>
+    </div>
+    <div class="flex gap-x-3 flex-1 grow flex-wrap border-solid border-emerald-200 border p-2">
+      <label for="actor" class="text-gray-900 text-lg">Ingrese el nombre de un actor para saber el éxito del mismo medido a través del retorno o box office total de sus películas</label>
+      <input type="text" name="actor" placeholder="Actor" class="border-emerald-300 border rounded-lg p-2 hover:border-emerald-700" id="actor">
+      <p class="block text-gray-400"></p>
+    </div>
+    <div class="flex gap-x-3 flex-1 grow flex-wrap border-solid border-emerald-200 border p-2">
+      <label for="director" class="text-gray-900 text-lg">Ingrese el nombre de un director para saber las películas en las que ha participado</label>
+      <input type="text" name="director" placeholder="Director" class="border-emerald-300 border rounded-lg p-2 hover:border-emerald-700" id="director">
+      <div class="block text-gray-400" id="movies-director"></div>
+  </section>
+  <script>
+    'use strict';
+    const button = document.querySelector('#btn');
+    const mes = document.getElementById('mes');
+    const dia = document.getElementById('dia');
+    const score = document.getElementById('score');
+    const votos = document.getElementById('votos');
+    const actor = document.getElementById('actor');
+    const director = document.getElementById('director');
+    const moviesDirector = document.getElementById('movies-director');
+
+    const form = document.getElementById('mes-form');
+    button.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const routes = {
+          'mes':[mes.value,'cantidad_filmaciones_mes'],
+          'dia':[dia.value,'cantidad_filmaciones_dia'],
+          'score':[score.value,'score_titulo'],
+          'votos':[votos.value,'votos_titulo'],
+          'actor':[actor.value,'get_actor'],
+          'director':[director.value,'get_director']
+        }
+        for(let key in routes){
+          const response = await fetch(`/${routes[key][1]}/${routes[key][0]}`);
+          const data = await response.json();
+          if(key==='director'){
+            if(director.value){
+              moviesDirector.textContent = ''
+              data.forEach(movie => {
+                const newNode = document.createElement('p');
+                newNode.textContent = `Id:${movie.id} for the movie "${movie.title}, directed by ${movie.director_name}, with a revenue of $${movie.revenue} was released on ${movie.release_date}\n"`
+                newNode.style.marginBottom = "13px"
+                moviesDirector.append(newNode)
+              });
+            }else{
+              moviesDirector.textContent = 'No hay información para mostrar'
+            }
+          
+          }else{
+            document.querySelector(`div #${key} + p`).innerHTML = data.message || 'No hay información para mostrar'
+          }
+        }
+        
+    });
+  </script>
+</body>
+</html>
